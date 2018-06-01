@@ -25,7 +25,6 @@ public class InjectUtils {
     /**
      * 事件注入
      * 事件注入针对的是方法
-     *
      */
     private static void injectEvent(Context context) {
         Class<?> clz = context.getClass();
@@ -48,7 +47,7 @@ public class InjectUtils {
 
             try {
                 Method value = annotation.getClass().getDeclaredMethod("value");
-                int[] ids = (int[])value.invoke(annotation);
+                int[] ids = (int[]) value.invoke(annotation);
 
 
             } catch (NoSuchMethodException e) {
@@ -74,30 +73,26 @@ public class InjectUtils {
             return;
         }
         for (Field field : fields) {
-            Annotation[] annotations = field.getAnnotations();
-            if (annotations == null) {
+            InjectView annotation = field.getAnnotation(InjectView.class);
+            if (annotation == null) {
                 continue;
             }
-            for (Annotation annotation : annotations) {
-                //获取到View注入注解
-                if (annotation instanceof InjectView) {
-                    //拿到id
-                    int id = ((InjectView) annotation).value();
-                    try {
-                        //findViewById
-                        Method findViewById = clz.getMethod("findViewById", int.class);
-                        Object view = findViewById.invoke(context, id);
-                        //设置View
-                        field.setAccessible(true);
-                        field.set(context, view);
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
+            //获取到View注入注解
+            //拿到id
+            int id = annotation.value();
+            try {
+                //findViewById
+                Method findViewById = clz.getMethod("findViewById", int.class);
+                Object view = findViewById.invoke(context, id);
+                //设置View
+                field.setAccessible(true);
+                field.set(context, view);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -107,29 +102,23 @@ public class InjectUtils {
      */
     private static void injectCententLayout(Context context) {
         Class<?> clz = context.getClass();
-        Annotation[] annotations = clz.getAnnotations();
-        if (annotations == null) {
+        InjectLayout annotation = clz.getAnnotation(InjectLayout.class);
+        if (annotation == null) {
             return;
         }
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof InjectLayout) {
-                //布局Id
-                int layoutId = ((InjectLayout) annotation).value();
-                //将id通过反射设置到布局中去  setContentView
-                try {
-                    Method setContentView = clz.getMethod("setContentView", int.class);
-                    setContentView.invoke(context, layoutId);
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-                return;
-            }
+        //布局Id
+        int layoutId = annotation.value();
+        //将id通过反射设置到布局中去  setContentView
+        try {
+            Method setContentView = clz.getMethod("setContentView", int.class);
+            setContentView.invoke(context, layoutId);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
-
 
 }
