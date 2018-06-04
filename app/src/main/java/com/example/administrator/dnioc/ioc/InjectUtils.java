@@ -27,21 +27,24 @@ public class InjectUtils {
     /**
      * 事件注入
      * 事件注入针对的是方法
+     * 使用动态代理 --> 注解的方法,替换掉事件的内容
      */
     private static void injectEvent(Context context) {
+        //被注入对象的所有方法
         Class<?> clz = context.getClass();
         Method[] methods = clz.getDeclaredMethods();
         if (methods == null) {
             return;
         }
-
         for (Method method : methods) {
+            //找到方法中  是事件注入的注解
             Annotation[] annotations = method.getAnnotations();
             if (annotations == null) {
                 continue;
             }
 
             for (Annotation annotation : annotations) {
+                //获取到父注解
                 Class<? extends Annotation> annotationType = annotation.annotationType();
                 EventBase eventBase = annotationType.getAnnotation(EventBase.class);
                 if (eventBase == null) {
