@@ -1,11 +1,13 @@
 package com.example.administrator.dnioc.ioc;
 
 import android.content.Context;
+import android.view.View;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 /**
  * @author : Administrator
@@ -28,39 +30,56 @@ public class InjectUtils {
      */
     private static void injectEvent(Context context) {
         Class<?> clz = context.getClass();
-        Method[] methods = clz.getMethods();
+        Method[] methods = clz.getDeclaredMethods();
         if (methods == null) {
             return;
         }
 
         for (Method method : methods) {
-            //获取事件注入注解
-            InjectEventParent annotation = method.getAnnotation(InjectEventParent.class);
-            if (annotation == null) {
+            Annotation[] annotations = method.getAnnotations();
+            if (annotations == null) {
                 continue;
             }
 
-            //获取事件三要素
-            String name = annotation.listenerName();
-            Class<?> aClass = annotation.listenerType();
-            String methodName = annotation.listenerMethod();
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annotationType = annotation.annotationType();
+                EventBase eventBase = annotationType.getAnnotation(EventBase.class);
+                if (eventBase == null) {
+                    continue;
+                }
+                //获取事件三要素
+                String name = eventBase.listenerName();
+                Class<?> listenerType = eventBase.listenerType();
+                String methodName = eventBase.listenerMethod();
 
-            try {
-                Method value = annotation.getClass().getDeclaredMethod("value");
-                int[] ids = (int[]) value.invoke(annotation);
-
-
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+                try {
+                    //获取id-->通过反射拿
+                    Method valueMethod = annotation.getClass().getDeclaredMethod("value");
+                    int[] ids = (int[]) valueMethod.invoke(annotation);
+                    //对每一个id设置事件
+                    for (int id : ids) {
+                        //拿到view
+                        Method findViewById = clz.getMethod("findViewById", int.class);
+                        View view = (View) findViewById.invoke(context, id);
+                        if (view == null) {
+                            return;
+                        }
+                        //获取代理类
+                        ListenerProxy listenerProxy = new ListenerProxy(context, method);
+                        Object o = Proxy.newProxyInstance(listenerType.getClassLoader(), new Class[]{listenerType}, listenerProxy);
+                        //拿到要设置到view中去的事件的方法
+                        Method onClickMethod = view.getClass().getMethod(name, listenerType);
+                        onClickMethod.invoke(view, o);
+                    }
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
             }
-
-
         }
-
     }
 
     /**

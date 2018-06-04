@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.example.administrator.dnioc.ioc.InjectLayout;
 import com.example.administrator.dnioc.ioc.InjectView;
+import com.example.administrator.dnioc.ioc.OnClick;
 
 @InjectLayout(R.layout.activity_main)
 public class MainActivity extends BaseActivity {
@@ -18,12 +19,12 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Toast.makeText(this, tv==null?"没找到控件":tv.toString(), Toast.LENGTH_SHORT).show();
-        View viewById = findViewById(R.id.tv_1);
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
     }
+
+    @Deprecated
+    @OnClick(R.id.tv_1)
+    public void onClick(View view){
+        Toast.makeText(this,"---->"+tv,Toast.LENGTH_SHORT).show();
+    }
+
 }

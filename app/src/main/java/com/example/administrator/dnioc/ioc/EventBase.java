@@ -1,13 +1,20 @@
 package com.example.administrator.dnioc.ioc;
 
-import android.view.View;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author : Administrator
  * @time : 17:22
  * @for :
  */
-public @interface InjectEventParent {
+@Retention(RetentionPolicy.RUNTIME)
+//该注解在另外一个注解上使用
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface EventBase {
     /**
      * @return 要设置的事件的名称
      */
@@ -22,4 +29,7 @@ public @interface InjectEventParent {
      * @return 事件触发后,执行的方法的名称
      */
     String listenerMethod();
+
+
+
 }

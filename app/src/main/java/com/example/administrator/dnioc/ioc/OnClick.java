@@ -15,11 +15,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@InjectEventParent(
+@EventBase(
         listenerName = "setOnClickListener",
         listenerType = View.OnClickListener.class,
         listenerMethod = "onClick"
 )
-public @interface OnViewClick {
-    int[] value();
+public @interface OnClick {
+    int[] value() default -1;
 }
